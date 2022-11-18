@@ -2,8 +2,8 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
-    name="damien.marsic", # Replace with your own username
-    version="0.0.4",
+    name="barseqcount",
+    version="0.0.5",
     author="Damien Marsic",
     author_email="damien.marsic@aliyun.com",
     description="Analysis of DNA barcode sequencing experiments",

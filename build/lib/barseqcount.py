@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__version__='0.0.4'
-last_update='2022-10-20'
+__version__='0.0.5'
+last_update='2022-11-18'
 author='Damien Marsic, damien.marsic@aliyun.com'
 license='GNU General Public v3 (GPLv3)'
 

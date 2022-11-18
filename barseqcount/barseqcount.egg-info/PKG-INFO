@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: barseqcount
+Version: 0.0.5
+Summary: Analysis of DNA barcode sequencing experiments
+Home-page: https://github.com/damienmarsic/barseqcount
+Author: Damien Marsic
+Author-email: damien.marsic@aliyun.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# barseqcount
+Analysis of DNA barcode sequencing experiments

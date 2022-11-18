@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+barseqcount/barseqcount.py
+barseqcount/barseqcount.egg-info/PKG-INFO
+barseqcount/barseqcount.egg-info/SOURCES.txt
+barseqcount/barseqcount.egg-info/dependency_links.txt
+barseqcount/barseqcount.egg-info/top_level.txt
