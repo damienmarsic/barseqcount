@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+barseqcount/barseqcount.py
+barseqcount/damien.marsic.egg-info/PKG-INFO
+barseqcount/damien.marsic.egg-info/SOURCES.txt
+barseqcount/damien.marsic.egg-info/dependency_links.txt
+barseqcount/damien.marsic.egg-info/top_level.txt
