@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-__version__='0.0.5'
-last_update='2022-11-18'
+__version__='0.1.1'
+last_update='2023-01-12'
 author='Damien Marsic, damien.marsic@aliyun.com'
 license='GNU General Public v3 (GPLv3)'
 
 import dmbiolib as dbl
 import argparse,sys,os,itertools,regex,math
 from glob import glob
+import numpy as np
 from collections import defaultdict
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -461,6 +462,10 @@ def analyze(args):
     comb=[]
     titles=[]
     xaxis=None
+    showind=True
+    showerr=None
+    bcmap=[]
+    hcmap=[]
     for line in f:
         ln=line.strip()
         if ln[:1]=='#':
@@ -486,6 +491,14 @@ def analyze(args):
             titles.append([])
         if ln[:8]=='# X-AXIS':
             read='xaxis'
+        if ln[:10]=='# SHOW IND':
+            read='showind'
+        if ln[:10]=='# SHOW ERR':
+            read='showerr'
+        if ln[:10]=='# BAR PLOT':
+            read='bcmap'
+        if ln[:10]=='# HEAT MAP':
+            read='hcmap'
         if ln[:3]=='===' or ln[:2]=='# ' or ln[:13]=='Instructions:' or not ln:
             continue
         if read=='bcount':
@@ -493,7 +506,7 @@ def analyze(args):
                 fail+='\n  Only one file should be listed under BARCODE COUNT FILE!'
             elif dbl.check_file(ln,False):
                 proj=ln[:ln.rfind('_count')]
-                _,bcount=dbl.csv_read(fname,False,None)
+                _,bcount=dbl.csv_read(ln,False,None)
             else:
                 fail+='\n  Barcode count file '+ln+' not found!'
         if read=='variants':
@@ -554,13 +567,42 @@ def analyze(args):
                 fail+='\n  In each group under COMBINE DATA, each line must contain a label followed by sample name(s) separated by spaces or tabs.'
             else:
                 fail+='\n  Unknown sample in this list: '+ln
+        if read=='bcmap':
+            bcmap.append(ln)
+        if read=='hcmap':
+            hcmap.append(ln)
+        ln=ln.lower()
         if read=='xaxis':
             if xaxis:
                 fail+='\n  Only one item should be present under X-AXIS!'
-            elif ln[0].lower()=='v':
+            elif ln[0]=='v':
                 xaxis=True
-            elif ln[0].lower()=='s':
+            elif ln[0]=='s':
                 xaxis=False
+            else:
+                fail+='\n  X-AXIS must be either Variants or Samples!'
+        if read=='showind':
+            if ln[0] in ('p','.'):
+                showind='k.'
+            elif ln[0] in ('c','o'):
+                showind='ko'
+            elif ln[0] in ('s','*'):
+                showind='k*'
+            elif ln[0] in ('f','n'):
+                showind=None
+            else:
+                fail+='\n  SHOW INDIVIDUL DATA POINTS can only be Points, Circles, Stars or None!'
+        if read=='showerr':
+            if ln[0]=='r':
+                showerr='r'
+            elif 'se' in ln or 'er' in ln:
+                showerr='se'
+            elif 'sd' in ln or 'de' in ln:
+                showerr='sd'
+            elif ln[0]=='n':
+                showerr=None
+            else:
+                fail+='\n  SHOW ERROR BARS can only be Range, Standard error, Standard deviation or None!'
     for n in comb:
         if not n:
             continue
@@ -574,12 +616,26 @@ def analyze(args):
             titles[comb.index(n)].insert(0,'')
     if xaxis==None:
         xaxis=True
+    if not bcmap or (len(set(bcmap))==1 and bcmap[0].lower()=='default'):
+        bcmap=['turbo_r','viridis','viridis','turbo_r']
+    elif len(bcmap)!=4:
+        fail+='\n  There should be exactly 4 color maps for bar plots!'
+    if not hcmap or (len(set(hcmap))==1 and hcmap[0].lower()=='default'):
+        hcmap=['seismic','hot_r']
+    elif len(hcmap)!=2:
+        fail+='\n  There should be exactly 2 color maps for heat maps!'
     if fail:
         print('Problems found!\n'+fail+'\n')
         sys.exit()
     else:
         print('OK')
-    pre=script+'_'+str(thr)+'_'+str(int(xaxis))+'_'
+    for i in range(4):
+        if bcmap[i].lower()=='default':
+            bcmap[i]=['turbo_r','viridis','viridis','turbo_r'][i]
+    for i in range(2):
+        if hcmap[i].lower()=='default':
+            hcmap[i]=['seismic','hot_r'][i]
+    pre=proj+'_'+str(thr)+'_'+str(int(xaxis))+'_'
     if format:
         mppdf=''
         print()
@@ -605,12 +661,14 @@ def analyze(args):
         q={n:M[n]/x for n in M}
         z=1/len(M)
         y=[k/z*100 for k in q.values()]
-        colors,fig=dbl.plot_start('turbo_r',len(M),'Variant mix composition')
+        colors,fig=dbl.plot_start(bcmap[0],len(M),'Variant mix composition')
         plt.bar(M.keys(),y,color=colors.colors)
         plt.xticks(rotation=90)
         plt.ylabel('% of equimolar frequency')
         plt.margins(x=0.015)
-        dbl.plot_end(fig,pre+'variant-mix-composition',format,mppdf)
+        a=pre+'variant-mix-composition'
+        dbl.plot_end(fig,a,format,mppdf)
+        dbl.csv_write(a+'.csv',list(M.keys()),y,None,'Variant mix composition',None)
         V=[V[i] for i in range(len(V)) if y[i]>=thr]
         if len(V)<len(M):
             print('\n  The following variants will be excluded from further analysis because their mix frequencies are below the threshold:')
@@ -636,12 +694,14 @@ def analyze(args):
         y.append(z)
     x.extend(list(S.keys()))
     y.extend([sum(BC[k].values()) for k in BC])
-    colors,fig=dbl.plot_start('viridis',len(x),'Global read count per sample')
+    colors,fig=dbl.plot_start(bcmap[1],len(x),'Global read count per sample')
     plt.bar(x,y,color=colors.colors)
     plt.xticks(rotation=90)
     plt.ylabel('Read count')
     plt.margins(x=0.015)
-    dbl.plot_end(fig,pre+'read-count-per-sample',format,mppdf)
+    a=pre+'read-count-per-sample'
+    dbl.plot_end(fig,a,format,mppdf)
+    dbl.csv_write(a+'.csv',x,y,None,'Global read cont per sample',None)
     for n in BC:
         for m in BC[n]:
             z=BC[n][m]/y[x.index(n)]
@@ -651,16 +711,18 @@ def analyze(args):
                 BC[n][m]=z*len(V)
     colors,fig=dbl.plot_start(None,None,'Global variant enrichment')
     x=[[math.log10(n) for n in list(BC[k].values())] for k in BC]
-    a=(BC,V)
+    a=(list(BC.keys()),V)
     if not xaxis:
         x=list(zip(*x))
-    plt.imshow(x,aspect='auto',cmap='seismic')
+    plt.imshow(x,aspect='auto',cmap=hcmap[0])
     lim=max(max([n for m in x for n in m]),abs(min([n for m in x for n in m])))
     plt.clim(-lim, lim)
     plt.colorbar(shrink=0.7,pad=0.015,label='Log(Enrichment factor)')
     plt.xticks(range(len(a[xaxis])),a[xaxis],rotation=90)
     plt.yticks(range(len(a[not xaxis])),a[not xaxis])
-    dbl.plot_end(fig,pre+'global_enrichment',format,mppdf)
+    b=pre+'global_enrichment'
+    dbl.plot_end(fig,b,format,mppdf)
+    dbl.csv_write(b+'.csv',a[not xaxis],x,a[xaxis],'Global enrichment',None)
     a=[]
     if gtit:
         a.append(gtit)
@@ -684,14 +746,14 @@ def analyze(args):
             a=etit
         else:
             continue
-        locs=list(range(len(comb[i])))
-        labels=titles[i][1:]
-        colors,fig=dbl.plot_start('viridis',len(labels),'Global '+titles[i][0].lower()+' biodistribution')
+        locs=list(range(len(titles[i][1:])))
+        labels=list(comb[i].keys())
+        colors,fig=dbl.plot_start(bcmap[2],len(labels),'Global '+titles[i][0].lower()+' biodistribution')
         z=0.8/len(labels)
         w=z*0.95
-        for j in range(len(labels)):
-            plt.bar([n+z*j for n in locs],[a[comb[i][n][j]] for n in comb[i]],width=w,label=labels[j],color=colors.colors[j])
-        plt.xticks([n+z*j/2 for n in locs],comb[i].keys())
+        for k in range(len(labels)):
+            plt.bar([n+z*k for n in locs],[a[comb[i][labels[k]][j]] for j in range(len(comb[i][labels[k]]))],width=w,label=labels[k],color=colors.colors[k])
+        plt.xticks([n+z*k/2 for n in locs],titles[i][1:])
         plt.ylabel(unit)
         plt.legend()
         dbl.plot_end(fig,pre+'global_'+titles[i][0].lower()+'_biodistribution',format,mppdf)
@@ -708,51 +770,58 @@ def analyze(args):
             unit='Enrichment factor'
         colors,fig=dbl.plot_start(None,None,titles[i][0]+' biodistribution')
         X=[[dbl.mean([BC[n][m] for n in comb[i][k]]) for m in V] for k in comb[i]]
+        if showerr=='r':
+            yerr0=[[min([BC[n][m] for n in comb[i][k]]) for m in V] for k in comb[i]]
+            yerr1=[[max([BC[n][m] for n in comb[i][k]]) for m in V] for k in comb[i]]
+        elif showerr=='se':
+            yerr0=[[np.std([BC[n][m] for n in comb[i][k]],ddof=1)/np.sqrt(np.size([BC[n][m] for n in comb[i][k]])) for m in V] for k in comb[i]]
+        elif showerr=='sd':
+            yerr0=[[np.std([BC[n][m] for n in comb[i][k]],ddof=1) for m in V] for k in comb[i]]
+        if showind:
+            show=[[[BC[n][m] for n in comb[i][k]] for m in V] for k in comb[i]]
         a=(list(comb[i].keys()),V)
         if not xaxis:
             X=list(zip(*X))
-        plt.imshow(X,aspect='auto',cmap='hot_r')
+        plt.imshow(X,aspect='auto',cmap=hcmap[1])
         plt.colorbar(shrink=0.7,pad=0.015,label=unit)
         plt.xticks(range(len(a[xaxis])),a[xaxis],rotation=90)
         plt.yticks(range(len(a[not xaxis])),a[not xaxis])
         dbl.plot_end(fig,pre+titles[i][0],format,mppdf)
         locs=list(range(len(a[not xaxis])))
         labels=a[xaxis]
-        colors,fig=dbl.plot_start('turbo_r',len(a[xaxis]),titles[i][0]+' biodistribution')
+        colors,fig=dbl.plot_start(bcmap[3],len(a[xaxis]),titles[i][0]+' biodistribution')
         z=0.8/len(labels)
-        w=z*0.95
+        w=z*0.95 
         for j in range(len(labels)):
-            plt.bar([n+z*j for n in locs],[X[k][j] for k in range(len(a[not xaxis]))],width=w,label=labels[j],color=colors.colors[j])
+            x=[n+z*j for n in locs]
+            h=[X[k][j] for k in range(len(a[not xaxis]))]
+            plt.bar(x,[X[k][j] for k in range(len(a[not xaxis]))],width=w,label=labels[j],color=colors.colors[j])
+            if showerr:
+                if showerr=='r':
+                    e0=[X[k][j]-yerr0[k][j] for k in range(len(a[not xaxis]))]
+                    e1=[yerr1[k][j]-X[k][j] for k in range(len(a[not xaxis]))]
+                else:
+                    e0=[yerr0[k][j] for k in range(len(a[not xaxis]))]
+                    e1=e0
+                plt.errorbar(x,h,yerr=[e0,e1],fmt='none',ecolor='black',capsize=2)
+            if showind:
+                y=[show[k][j] for k in range(len(a[not xaxis]))]
+                for x1, y1 in zip(x, y):
+                    plt.plot([x1] * len(y1), y1,showind)
         plt.xticks([n+z*j/2 for n in locs],a[not xaxis])
         plt.ylabel(unit)
         plt.legend()
         dbl.plot_end(fig,pre+titles[i][0]+'_biodistribution',format,mppdf)
         dbl.csv_write(pre+titles[i][0]+'_biodistribution.csv',a[not xaxis],X,a[xaxis],titles[i][0]+' biodistribution',None)
-
-
-
-##   save range and include error bars in bar plots !!!
-##  option combine data from different tissues (ex. all retina) in comb, ex. RPE / RgcPR / RPE+RgcPR
-##  3d w error bars ?
-##  option both xaxis for Global var enrich + all biodistributions (heatmap + barplots)
-## save csv for each plot !!!
-## find a way to choose colors in maps (conf file or arguments / None size if tab10/20  )
-##  Global biodistributions: animal numbers in x axis, tissue in colors/legends (opposite of current)
-
-
-###################################
     if not format:
         mppdf.close()
         print('\n  All figures were saved into single multipage file: '+fname+'\n')
     f.close()
- 
-
 
 def anaconf(fname,args):
-    fail=''
     x=glob('*_count_report.txt')
     if not x:
-        fail+='\n  Count report file not found! It must be present in the working directory!'
+        print('\n  Count report file not found! It must be present in the working directory!\n')
         sys.exit()
     report=max(x,key=os.path.getctime)
     f=open(report,'r')
@@ -803,9 +872,7 @@ def anaconf(fname,args):
                 defn.append(d)
     f.close()
     if not defn:
-        fail+='\n  No variant or sample definition found!'
-    if fail:
-        print('\n'+fail+'\n')
+        print('\n  No variant or sample definition found!\n')
         sys.exit()
     x={}
     for n in set([k[0] for k in defn]):
@@ -848,7 +915,7 @@ def anaconf(fname,args):
     other=[k for k in s if (k not in dna and k not in rna)]
     f.write('# GLOBAL GENOME TITERS:\nInstructions: Enter the names of all samples for which you have a global variant genome relative to host genome titer, one per line, with the name followed by the titer value and the unit, separated by tabs or blank spaces. The unit must be the same for all samples, and can be entered once (will be applied to all other samples) or more.\n\n'+'\t\tvg/cell\n'.join(dna)+'\t\tvg/cell\n\n')
     f.write('# GLOBAL EXPRESSION TITERS:\nInstructions: Enter the names of all samples for which you have a global variant expression relative to host housekeeping gene expression level titer, one per line, with the name followed by the titer value and the unit, separated by tabs or blank spaces. The unit must be the same for all samples, and can be entered once (will be applied to all other samples) or more.\n\n'+'\t\t% control\n'.join(rna)+'\t\t% control\n\n')
-    f.write('# COMBINE DATA:\nInstructions: Each group of lines separated by empty lines will be a separate plot. Multiple samples within lines will be averaged. First line in each group is the figure title followed by sample identifiers (separated by space or tab). Each subsequent line: label followed by sample name(s) separated by tabs or spaces.\n\n')
+    f.write('# COMBINE BIOLOGICAL REPLICATES:\nInstructions: Each group of lines separated by empty lines will be a separate plot. Multiple samples within lines will be averaged. First line in each group is the figure title followed by sample identifiers (separated by space or tab). Each subsequent line: label followed by sample name(s) separated by tabs or spaces.\n\n')
     for n in (dna,rna,other):
         if not n:
             continue
@@ -879,6 +946,10 @@ def anaconf(fname,args):
             f.write(m+'\t'+'\t'.join(sorted([n[i] for i in range(len(n)) if all([q in p[i] for q in m.split('-')])]))+'\n')
         f.write('\n')
     f.write('# X-AXIS:\nInstructions: either variants or samples can be on the x-axis.\n\nVariants\n\n')
+    f.write('# SHOW INDIVIDUAL DATA POINTS:\nInstructions: on bar plots of combined data, superimpose individual data points (points / circles / stars / none).\n\npoints\n\n')
+    f.write('# SHOW ERROR BARS:\nInstructions: display error bars on bar plots of combined data (Range / Standard error / Standard deviation / None).\n\nNone\n\n')
+    f.write('# BAR PLOT COLOR MAPS:\nInstructions: list color maps to be used in bar plots, one per line for variant mix, global read count, global biodistribution, detailed biodistribution (default or leave empty for default color maps, or any compatible matplotlib color map such as turbo, viridis, plasma, inferno, magma, cividis, twilight, tab20 or their reversed versions with _r appended).\n\ndefault\ndefault\ndefault\ndefault\n\n')
+    f.write('# HEAT MAP COLOR MAPS:\nInstructions: list color maps to be used in heat maps, one per line for global variant enrichment and biodistribution (default or leave empty for default color maps, or any compatible color map such as seismic, bwr, hot, RdBu or their reversed versions with _r appended).\n\ndefault\ndefault\n\n')
     f.write('=== END OF CONFIGURATION FILE ===')
     f.close()
     print('\n  Edit the file '+fname+' before running '+script+' '+args.command+' again !\n\n')
@@ -983,7 +1054,7 @@ def maxmatch(sample,target,probe):
 
 def override(func):
     class OverrideAction(argparse.Action):
-        def __call__(self, parser, namespace, values, option_string):
+        def __call__(self,parser,namespace,values,option_string):
             func()
             parser.exit()
     return OverrideAction
