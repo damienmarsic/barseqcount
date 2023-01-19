@@ -1,4 +1,4 @@
-dmbiolib documentation
+barseqcount documentation
 ======================
 
 .. toctree::
