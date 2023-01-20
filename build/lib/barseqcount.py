@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__version__='0.1.1'
-last_update='2023-01-12'
+__version__='0.1.2'
+last_update='2023-01-20'
 author='Damien Marsic, damien.marsic@aliyun.com'
 license='GNU General Public v3 (GPLv3)'
 
@@ -978,25 +978,6 @@ def countconf(fname,args):
     dbl.conf_end(f,fname,z)
 
 def find_bc(l,templ,bcr,cl,ctempl,cbcr):
-    def fb(l,templ,i,a,b,c,bcr):
-        r=''
-        x=[k.start()+i-a for k in regex.finditer(templ[a:i],l,overlapped=True)]
-        if x:
-            y=[k.start() for k in regex.finditer(templ[b:c],l,overlapped=True)]
-            z=[(n,m) for n in x for m in y if m>n and m-n==bcr[i][0]]
-            if z:
-                if len(z)==1:
-                    z=z[0]
-                else:
-                    q=min([abs(k[0]-i) for k in z])
-                    w=[k for k in z if abs(k[0]-i)==q]
-                    if len(w)==1:
-                        z=w[0]
-                    else:
-                        z=None
-                if z:
-                    r=l[z[0]:z[1]]
-        return r
     X={}
     p=0
     ec=[0,0,0]
@@ -1007,7 +988,7 @@ def find_bc(l,templ,bcr,cl,ctempl,cbcr):
         if l[a:i]==templ[a:i] and l[b:min(c,len(l))]==templ[b:c]:
             X[i]=l[i:b]
             continue
-        x=fb(l,templ,i,a,b,c,bcr)
+        x=fb(l,templ,i,bcr)
         if x:
             X[i]=x
             p+=1
@@ -1023,7 +1004,7 @@ def find_bc(l,templ,bcr,cl,ctempl,cbcr):
                 p+=1
                 ec[1]+=1
                 continue
-            x=fb(cl,ctempl,j,a,b,c,cbcr)
+            x=fb(cl,ctempl,j,cbcr)
             if x:
                 X[i]=x
                 p+=2
@@ -1032,6 +1013,26 @@ def find_bc(l,templ,bcr,cl,ctempl,cbcr):
         X={}
         break
     return X,p,ec
+
+def fb(l,templ,i,bcr):
+    r=''
+    x=[k.start()+i-bcr[i][-3] for k in regex.finditer(templ[bcr[i][-3]:i],l,overlapped=True)]
+    if x:
+        y=[k.start() for k in regex.finditer(templ[bcr[i][-2]:bcr[i][-1]],l,overlapped=True)]
+        z=[(n,m) for n in x for m in y if m>n and m-n==bcr[i][0]]
+        if z:
+            if len(z)==1:
+                z=z[0]
+            else:
+                q=min([abs(k[0]-i) for k in z])
+                w=[k for k in z if abs(k[0]-i)==q]
+                if len(w)==1:
+                    z=w[0]
+                else:
+                    z=None
+            if z and round(i*0.9)-2<=z[0]<=round(i*1.1)+2:
+                r=l[z[0]:z[1]]
+    return r
 
 def maxmatch(sample,target,probe):
     a=b=x=y=w=z=0
