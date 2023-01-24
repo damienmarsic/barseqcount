@@ -37,35 +37,85 @@ Usage
 =====
 
 
+barseqcount count
+*****************
+
+
+barseqcount analyze
+*******************
+
+
 Functions
 =========
 
 main()
 ******
 
+The ``main()`` function uses ``argparse`` to read and process the command line arguments. 
+
 count(args)
 ***********
+* args: argparse arguments
+
+|
 
 analyze(args)
 *************
+* args: argparse arguments
+
+|
 
 anaconf(fname,args)
 *******************
+* fname: name of the configuration file to be created
+* args: arguments
+
+| Creates a configuration file for the ``barseqcount analyze`` program
 
 countconf(fname,args)
 *********************
+* fname: name of the configuration file to be created
+* args: arguments
+
+| Creates a configuration file for the ``barseqcount count`` program
 
 find_bc(l,templ,bcr,cl,ctempl,cbcr)
 ***********************************
+* l: read
+* templ: template
+* bcr: dictionary containing information about barcode locations and error correction
+* cl: compressed read (using compress function from ``dmbiolib``)
+* ctempl: compressed template
+* cbcr: dictionary containing information about barcode locations based on compressed template
+
+| Identifies all barcodes in a read and perfoems error correction as appropriate.
+
+| Returns a dictionary of barcode positionsa / barcode sequences, a number indicating whether the read was corrected (>0) or not (0), and a list containing error correction counters.
 
 fb(l,templ,i,bcr)
 *****************
+* l: read (nucleotide sequence)
+* templ: template
+* i: barcode index
+* bcr: dictionary containing information about barcode locations and error correction
+
+| Determines bacode sequence by mapping read sequence to template, using information about barcode locations and error correction.
+
+| Returns barcode sequence.
 
 maxmatch(sample,target,probe)
 *****************************
+* sample: nucleotide sequence of primer
+* target: nucleotide sequence of template
+* probe: initial probe size
+
+| Determines largest part of the primer that matches the template.
+
+| Returns (a,x,b,y) where a is the maximum extent of the primer from its right end that matches the template, b is the maximum extent of the primer from its left end that matches the template, x is the template index of sample[-a:], and y is the template index of sample[:b].
 
 override(func)
 **************
+Allows argparse to handle the -v / --version argument correctly.
 
 version()
 *********
