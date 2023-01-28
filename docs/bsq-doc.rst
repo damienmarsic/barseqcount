@@ -35,7 +35,16 @@ To update ``barseqcount`` to the latest version, using pip::
 
 Usage
 =====
+::
+    barseqcount.py [-h] [-v] {count,analyze} ...
 
+The optional arguments -h/--help and -v/--version allow to show a help message and version information respectively.
+
+Positional arguments ``count`` and ``analyze``  are the two commands that ``barseqcount`` can run. The former processes read files, collects barcode data and saves a barcode distribution file. The latter analyzes the barcode distribution data and displays the results as a collection of plots. 
+
+``barseqcount count`` has optional arguments -c/--configuration_file and -n/--new. The -c argument (followed by a file name) specifies which configuration file to use, or which to create if it does not exist yet. The -n argument allows to ignore an existing configuration file and to create a new one.
+
+``barseqcount analyze`` has the same -c and -n arguments, but also a third one: -f/file_format, allowing to chose a file format to save the plots individually. If the -f argument i not used, then all plots will be saved in a single multipage pdf file.
 
 barseqcount count
 *****************
@@ -57,13 +66,13 @@ The ``main()`` function uses ``argparse`` to read and process the command line a
 
 count(args)
 ***********
-* args: argparse arguments
+* args: optional arguments following the ``count`` command
 
 | Creates a new configuration file if none exists or if -n/--new argument is present. Otherwise, processes the read file(s) according to instructions in the configuration file. Saves the barcode distribution in a csv file, and a report in a txt file.
 
 analyze(args)
 *************
-* args: argparse arguments
+* args: optional arguments following the ``analyze`` command
 
 | Creates a new configuration file if none exists or if -n/--new argument is present. Otherwise, analyzes the data according to instructions in the configuration file. Creates a series of plots and saves resultst in csv files.
 
