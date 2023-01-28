@@ -50,11 +50,18 @@ Positional arguments ``count`` and ``analyze``  are the two commands that ``bars
 barseqcount count
 *****************
 
-Read files
-----------
+Any common read file format (fasta or fastq, either uncompressed or gzipped) can be read by ``barseqcount count``. However, paired-end reads must be merged before use. Many merger programs can be used, for example ``NGmerge`` from the ``ngmerge`` package is recommanded. Example of installation in a conda environment::
 
-sdsd
-correctedddasdas
+    conda install ngmerge
+
+Example of merging read files Reads_1.fq.gz and Reads_2.fq.gz into Merged_reads.fq.gz::
+
+    NGmerge -1 Reads_1.fq.gz -2 Reads_2.fq.gz -o Merged_reads
+
+
+ 
+
+
 
 
 
