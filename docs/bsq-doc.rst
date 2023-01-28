@@ -36,6 +36,7 @@ To update ``barseqcount`` to the latest version, using pip::
 Usage
 =====
 ::
+
     barseqcount.py [-h] [-v] {count,analyze} ...
 
 The optional arguments -h/--help and -v/--version allow to show a help message and version information respectively.
