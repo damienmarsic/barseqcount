@@ -45,10 +45,18 @@ Positional arguments ``count`` and ``analyze``  are the two commands that ``bars
 
 ``barseqcount count`` has optional arguments ``-c/--configuration_file`` and ``-n/--new``. The -c argument (followed by a file name) specifies which configuration file to use, or which to create if it does not exist yet. The -n argument allows to ignore an existing configuration file and to create a new one.
 
-``barseqcount analyze`` has the same ``-c`` and ``-n`` arguments, but also a third one: ``-f/--file_format``, allowing to chose a file format to save the plots individually. If the -f argument i not used, then all plots will be saved in a single multipage pdf file.
+``barseqcount analyze`` has the same ``-c`` and ``-n`` arguments, but also a third one: ``-f/--file_format``, allowing to chose a file format to save the plots individually. If the ``-f`` argument is not used, then all plots will be saved in a single multipage pdf file.
 
 barseqcount count
 *****************
+
+Read files
+----------
+
+sdsd
+correctedddasdas
+
+
 
 
 barseqcount analyze
@@ -127,7 +135,7 @@ maxmatch(sample,target,probe)
 
 override(func)
 **************
-Allows argparse to handle the -v / --version argument correctly.
+Allows argparse to handle the ``-v/--version`` argument correctly.
 
 version()
 *********
