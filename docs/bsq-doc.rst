@@ -48,6 +48,8 @@ barseqcount analyze
 Functions
 =========
 
+Many of the functions used in ``barseqcount`` are also used in other projects and have been iincluded in the `dmbiolib <https://dmbiolib.readthedocs.io/en/latest/dbl-doc.html>`_ package.
+
 main()
 ******
 
@@ -57,13 +59,13 @@ count(args)
 ***********
 * args: argparse arguments
 
-|
+| Creates a new configuration file if none exists or if -n/--new argument is present. Otherwise, processes the read file(s) according to instructions in the configuration file. Saves the barcode distribution in a csv file, and a report in a txt file.
 
 analyze(args)
 *************
 * args: argparse arguments
 
-|
+| Creates a new configuration file if none exists or if -n/--new argument is present. Otherwise, analyzes the data according to instructions in the configuration file. Creates a series of plots and saves resultst in csv files.
 
 anaconf(fname,args)
 *******************
