@@ -50,6 +50,8 @@ Positional arguments ``count`` and ``analyze``  are the two commands that ``bars
 barseqcount count
 *****************
 
+Although ``barseqcount count`` works with any number of barcodes, typically, each read contains one variant barcode, as well as possibly one or more sample barcodes. The sample barcodes are introduced by barcoded primers which are used to amplify the variant barcode sequence. In the case of Illumina sequencing, if indexes (barcodes introduced by PCR or ligation) are used for different samples, demultiplexing is typically performed by the NGS provider, in which case multiple files will be provided (1 file or 1 file pair per index), with their reads only containing the variant barcode. In that case, and in any case where multiple read files are present, file name prefixes will be used as sample barcodes.
+
 Any common read file format (fasta or fastq, either uncompressed or gzipped) can be read by ``barseqcount count``. However, paired-end reads must be merged before use. Many merger programs can be used, for example ``NGmerge`` from the ``ngmerge`` package is recommanded. Example of installation in a conda environment::
 
     conda install ngmerge
@@ -58,8 +60,11 @@ Example of merging read files Reads_1.fq.gz and Reads_2.fq.gz into Merged_reads.
 
     NGmerge -1 Reads_1.fq.gz -2 Reads_2.fq.gz -o Merged_reads
 
+If no configuration file (barseqcount_count.conf by default or any file name entered after the ``-c`` argument) exists in the current directory, or if the ``-n`` argument is used, the command ``barseqcount count`` will create a new configuration file (named barseqcount_count.conf by default if the ``-c`` argument is not used). If the ``-n`` argument is used, the existing configuration file will be renamed by adding a unique string of numbers before the file extension.
 
- 
+
+
+
 
 
 
@@ -73,7 +78,7 @@ barseqcount analyze
 Functions
 =========
 
-Many of the functions used in ``barseqcount`` are also used in other projects and have been iincluded in the `dmbiolib <https://dmbiolib.readthedocs.io/en/latest/dbl-doc.html>`_ package.
+Many of the functions used in ``barseqcount`` are also used in other projects and have been included in the `dmbiolib <https://dmbiolib.readthedocs.io/en/latest/dbl-doc.html>`_ package.
 
 main()
 ******
