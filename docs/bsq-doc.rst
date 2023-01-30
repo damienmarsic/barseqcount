@@ -50,7 +50,13 @@ Positional arguments ``count`` and ``analyze``  are the two commands that ``bars
 barseqcount count
 *****************
 
+Barcodes
+--------
+
 Although ``barseqcount count`` works with any number of barcodes, typically, each read contains one variant barcode, as well as possibly one or more sample barcodes. The sample barcodes are introduced by barcoded primers which are used to amplify the variant barcode sequence. In the case of Illumina sequencing, if indexes (barcodes introduced by PCR or ligation) are used for different samples, demultiplexing is typically performed by the NGS provider, in which case multiple files will be provided (1 file or 1 file pair per index), with their reads only containing the variant barcode. In that case, and in any case where multiple read files are present, file name prefixes will be used as sample barcodes.
+
+Paired-end reads
+----------------
 
 Any common read file format (fasta or fastq, either uncompressed or gzipped) can be read by ``barseqcount count``. However, paired-end reads must be merged before use. Many merger programs can be used, for example ``NGmerge`` from the ``ngmerge`` package is recommanded. Example of installation in a conda environment::
 
@@ -60,7 +66,21 @@ Example of merging read files Reads_1.fq.gz and Reads_2.fq.gz into Merged_reads.
 
     NGmerge -1 Reads_1.fq.gz -2 Reads_2.fq.gz -o Merged_reads
 
-If no configuration file (barseqcount_count.conf by default or any file name entered after the ``-c`` argument) exists in the current directory, or if the ``-n`` argument is used, the command ``barseqcount count`` will create a new configuration file (named barseqcount_count.conf by default if the ``-c`` argument is not used). If the ``-n`` argument is used, the existing configuration file will be renamed by adding a unique string of numbers before the file extension.
+Configuration file
+------------------
+
+If no configuration file (barseqcount_count.conf by default or any file name entered after the ``-c`` argument) exists in the current directory, or if the ``-n`` argument is used, the command ``barseqcount count`` will create a new configuration file (named barseqcount_count.conf by default if the ``-c`` argument is not used).
+If the ``-n`` argument is used, the existing configuration file will be renamed by adding a unique string of numbers before the file extension.
+The configuration file needs to be edited by the user and each section needs to be filled out with appropriate information before it can be used.
+Some sections are populated automatically if the program detects the most plausible content: Project name (working directory name), Read file(s) (any gzipped files present in the current directory) and Template sequence (if a single fasta file is present in the current directory).
+All other sections must be populated by the user according to the instructions provided within the configuration file.
+When the configuration file is ready, running ``barseqcount count`` will open it and check its contents.
+If errors are detected, the program will exit with an explanatory message. Otherwise, it will proceed with processing the read file(s).
+
+
+
+
+
 
 
 
@@ -95,7 +115,7 @@ analyze(args)
 *************
 * args: optional arguments following the ``analyze`` command
 
-| Creates a new configuration file if none exists or if -n/--new argument is present. Otherwise, analyzes the data according to instructions in the configuration file. Creates a series of plots and saves resultst in csv files.
+| Creates a new configuration file if none exists or if -n/--new argument is present. Otherwise, analyzes the data according to instructions in the configuration file. Creates a series of plots and saves results in csv files.
 
 anaconf(fname,args)
 *******************
