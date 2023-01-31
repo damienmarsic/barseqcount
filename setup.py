@@ -3,7 +3,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
     name="barseqcount",
-    version="0.1.2",
+    version="0.1.3",
     author="Damien Marsic",
     author_email="damien.marsic@aliyun.com",
     description="Analysis of DNA barcode sequencing experiments",

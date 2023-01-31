@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-__version__='0.1.2'
-last_update='2023-01-20'
+__version__='0.1.3'
+last_update='2023-01-31'
 author='Damien Marsic, damien.marsic@aliyun.com'
 license='GNU General Public v3 (GPLv3)'
 
 import dmbiolib as dbl
-import argparse,sys,os,itertools,regex,math
+import argparse,sys,os,itertools,regex
 from glob import glob
 import numpy as np
 from collections import defaultdict
@@ -32,12 +32,14 @@ def main():
         analyze(args)
 
 def count(args):
+    ### Create configuration file if needed ###
     fname=args.configuration_file
     if args.new:
         dbl.rename(fname)
     if args.new or not dbl.check_file(fname,False):
         countconf(fname,args)
         return
+    ### Process configuration file ###
     read=''
     proj=''
     rfiles=[]
@@ -275,6 +277,7 @@ def count(args):
     if fail:
         print('\n'+fail+'\n')
         sys.exit()
+    ### Check read file(s) ###
     fail=''
     print('OK\n\n  Checking read files...    ',end='')
     for j in range(len(rfiles)):
@@ -310,6 +313,7 @@ def count(args):
         dbl.pr2(r,'Problems found!\n'+fail+'\n')
     else:
         print('OK\n')
+    ### Display settings ###
     dbl.pr2(r,'  Read file prefix         Read file                     Number of reads    Read orientation')
     for n in rfiles:
         dbl.pr2(r,'  '+n[0].ljust(25)+n[1].ljust(30)+f'{n[2]:,}'.rjust(15)+n[3].center(24))
@@ -327,7 +331,7 @@ def count(args):
             for n in x:
                 if len(x[n])<w:
                     x[n].append(('',''))
-            dbl.pr2(r,'  '+''.join([(x[k][i][0]+' '+x[k][i][1]).ljust(z[k]) for k in x]))   #####  add blank spaces or .ljust !!!!
+            dbl.pr2(r,'  '+''.join([(x[k][i][0]+' '+x[k][i][1]).ljust(z[k]) for k in x]))
         dbl.pr2(r,'\n  Error correction:\n  Position  Single substitutions  Indels within homopolymer')
         for n in bcr:
             dbl.pr2(r,str(n).rjust(10)+str(bcr[n][1]).center(22)+str(bcr[n][2]).center(27))
@@ -354,6 +358,7 @@ def count(args):
     counts=defaultdict(int)
     ec=[0,0,0,0,0]  # alternate position, compressed mode, compressed mode + alternate position, barcode single substitution, corrected reads
     C=0
+    ### Process read file(s) ###
     for rfile in rfiles:
         print()
         f,step=dbl.initreadfile(rfile[1])
@@ -417,6 +422,7 @@ def count(args):
             dbl.progress_check(c,show,t)
         dbl.progress_end()
         f.close()
+    ### Display result summary ###
     x=[DEF[k].values() for k in DEF]
     y=0
     for n in counts:
@@ -439,12 +445,14 @@ def count(args):
     print('\n  Report was saved into file: '+rname+'\n')
 
 def analyze(args):
+    ### Create configuration file if needed ###
     cf=args.configuration_file
     if args.new:
         dbl.rename(cf)
     if args.new or not dbl.check_file(cf,False):
         anaconf(cf,args)
         return
+    ### Process configuration file ###
     format=dbl.check_plot_format(args.file_format)
     print('\n  Checking configuration... ',end='')
     f=open(cf,'r')
@@ -645,6 +653,7 @@ def analyze(args):
         mppdf=PdfPages(fname)
     V.sort()
     M={}
+    ### Plot variant mix composition if variant mix exists ###
     if mix:
         M={n:0 for n in V}
         m=set(mix.split(','))
@@ -675,6 +684,7 @@ def analyze(args):
             print('  '+'\n  '.join([k for k in M if not k in V])+'\n')
         z=sum([M[n] for n in V])
         M={n:M[n]/z for n in V}
+    ### Plot global read count per sample ###
     BC={k:{n:1 for n in V} for k in S}
     for n in bcount:
         for q in n[:-1]:
@@ -702,6 +712,7 @@ def analyze(args):
     a=pre+'read-count-per-sample'
     dbl.plot_end(fig,a,format,mppdf)
     dbl.csv_write(a+'.csv',x,y,None,'Global read cont per sample',None)
+    ### Plot global variant enrichment ###
     for n in BC:
         for m in BC[n]:
             z=BC[n][m]/y[x.index(n)]
@@ -710,7 +721,7 @@ def analyze(args):
             else:
                 BC[n][m]=z*len(V)
     colors,fig=dbl.plot_start(None,None,'Global variant enrichment')
-    x=[[math.log10(n) for n in list(BC[k].values())] for k in BC]
+    x=[[np.log10(n) for n in list(BC[k].values())] for k in BC]
     a=(list(BC.keys()),V)
     if not xaxis:
         x=list(zip(*x))
@@ -723,6 +734,7 @@ def analyze(args):
     b=pre+'global_enrichment'
     dbl.plot_end(fig,b,format,mppdf)
     dbl.csv_write(b+'.csv',a[not xaxis],x,a[xaxis],'Global enrichment',None)
+    ### Plot global biodistributions ###
     a=[]
     if gtit:
         a.append(gtit)
@@ -757,6 +769,7 @@ def analyze(args):
         plt.ylabel(unit)
         plt.legend()
         dbl.plot_end(fig,pre+'global_'+titles[i][0].lower()+'_biodistribution',format,mppdf)
+    ### Detailed biodistributions ###
     for i in range(len(comb)):
         if not comb[i]:
             continue

@@ -41,11 +41,16 @@ Usage
 
 The optional arguments ``-h/--help`` and ``-v/--version`` allow to show a help message and version information respectively.
 
-Positional arguments ``count`` and ``analyze``  are the two commands that ``barseqcount`` can run. The former processes read files, collects barcode data and saves a barcode distribution file. The latter analyzes the barcode distribution data and displays the results as a collection of plots. 
+Positional arguments ``count`` and ``analyze``  are the two commands that ``barseqcount`` can run.
+The former processes read files, collects barcode data and saves a barcode distribution file.
+The latter analyzes the barcode distribution data and displays the results as a collection of plots. 
 
-``barseqcount count`` has optional arguments ``-c/--configuration_file`` and ``-n/--new``. The -c argument (followed by a file name) specifies which configuration file to use, or which to create if it does not exist yet. The -n argument allows to ignore an existing configuration file and to create a new one.
+``barseqcount count`` has optional arguments ``-c/--configuration_file`` and ``-n/--new``.
+The ``-c`` argument (followed by a file name) specifies which configuration file to use, or which to create if it does not exist yet.
+The ``-n`` argument allows to ignore an existing configuration file and to create a new one.
 
-``barseqcount analyze`` has the same ``-c`` and ``-n`` arguments, but also a third one: ``-f/--file_format``, allowing to chose a file format to save the plots individually. If the ``-f`` argument is not used, then all plots will be saved in a single multipage pdf file.
+``barseqcount analyze`` has the same ``-c`` and ``-n`` arguments, but also a third one: ``-f/--file_format``, allowing to chose a file format to save the plots individually.
+If the ``-f`` argument is not used, then all plots will be saved in a single multipage pdf file.
 
 barseqcount count
 *****************
@@ -82,7 +87,7 @@ Error correction
 
 Whether error correction is performed is determind automatically by ``barseqcount count`` by analyzing the barcode sequences in the configuration file.
 If all barcodes within the same barcode location differ by at least 3 nucleotide substitutions from any other barcode, then single substitution error correction will be activated for that location, which means that if an unknown barcode is obtained which can be converted to a know barcode by a single substitution, it will be converted to that known barcode.
-The other type of error correction corrects for indels within homopolymers of the sequences surrounding the barcode and for homopolymer insertions within the barcode sequence, and is only activated if homopolymers are absent from all expected barcodes in the barcode location.
+The other type of error correction corrects for indels within homopolymers of the sequences surrounding the barcode and for homopolymer insertions within the barcode sequence, and is only activated if homopolymers are absent from all expected barcodes in the barcode locationand if the ends of the barcodes are different from the nucleotide next to them.
 
 Read file processing
 --------------------
@@ -99,7 +104,7 @@ If no configuration file (barseqcount_analyze.conf by default or any file name e
 If the ``-n`` argument is used, the existing configuration file will be renamed by adding a unique string of numbers before the file extension.
 The configuration file will only be created if a count report file can be found in the current directory (if more than one is present, the most recent will be used), from which relevant information (such as the barcode distribution file name and the definitions) will be used to prepopulate some sections of the configuration file.
 The configuration file needs to be edited by the user and each section needs to be filled out with appropriate information before it can be used.
-Most sections are actually populated automatically by ``barseqcount analyze`` (but should still be edited by the user according to thir preferences) except for the global genome and expression titers which need to be entered manually (although simplified analysis can still be performed if these sections are empty).
+Most sections are actually populated automatically by ``barseqcount analyze`` (but should still be edited by the user according to their preferences) except for the global genome and expression titers which need to be entered manually (although simplified analysis can still be performed if these sections are empty).
 When the configuration file is ready, running ``barseqcount analyze`` will open it and check its contents.
 If errors are detected, the program will exit with an explanatory message.
 
@@ -107,13 +112,13 @@ Analysis
 --------
 
 ``barseqcount analyze`` analyzes the data from the barcode distribution file according to the settings in the configuration files, and displays the results as a collection of configurable bar plots and heat maps.
-For each plot, the data is also saved as a csv file, so the user has also the option of creating their own plots. 
+For each plot, the data is also saved as a csv file, so the user also has the option of creating their own plots. 
 
 Variant mix composition
 -----------------------
 
 If a variant mix exists in the sample definitions, its composition is displayed as a bar plot, with the variants in the x-axis and the deviation from equimolar frequency in the y-axis.
-If some variants have a frequency below a threshold defined in the configuration file, they will be removed from all subsequent plots.
+If some variants have a frequency below a threshold defined in the configuration file, they will be removed from all subsequent analyses.
 
 Global read count per sample
 ----------------------------
