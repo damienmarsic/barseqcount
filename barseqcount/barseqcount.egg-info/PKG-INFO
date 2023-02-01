@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: barseqcount
-Version: 0.1.2
+Version: 0.1.3
 Summary: Analysis of DNA barcode sequencing experiments
 Home-page: https://github.com/damienmarsic/barseqcount
 Author: Damien Marsic
@@ -15,4 +15,19 @@ Description-Content-Type: text/markdown
 License-File: LICENSE
 
 # barseqcount
+
 Analysis of DNA barcode sequencing experiments
+
+Install from PyPI:
+````
+pip install barseqcount
+````
+Full documentation: https://barseqcount.readthedocs.io/
+
+GitHub issues (bug reports, feature requests): https://github.com/damienmarsic/barseqcount/issues/new/choose
+
+[![brseqcount documentation](https://img.shields.io/badge/barseqcount-Documentation-yellow)](https://barseqcount.readthedocs.io/)
+
+
+
+
