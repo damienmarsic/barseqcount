@@ -18,17 +18,34 @@ Bug report / feature requests:
 Installation
 ============
 
-``barseqcount`` can be installed using pip::
+It is recommended to install ``barseqcount`` as a bioconda package under a Python 3 conda environment.
+If you don't have such environment, first `install Miniconda3<https://docs.conda.io/en/latest/miniconda.html>`_ from here (exists for Linux, MacOSX and Windows).
+
+To install the ``barseqcount`` bioconda package, at the conda prompt type::
+
+   conda install -c bioconda barseqcount
+
+``barseqcount`` can be also installed using pip::
 
     pip install barseqcount
 
-Note that dependencies might need to be installed individually.
+If using pip intall, note that dependencies (numpy, matplotlib and regex) might need to be installed individually if not already present.
 
 
 Update
 ======
 
-To update ``barseqcount`` to the latest version, using pip::
+To update ``barseqcount`` to the latest version:
+
+Using conda::
+
+    conda update barseqcount
+
+or even better::
+
+    conda update --all
+
+Using pip::
 
    pip install barseqcount -U
 
@@ -37,7 +54,11 @@ Usage
 =====
 ::
 
-    barseqcount.py [-h] [-v] {count,analyze} ...
+    barseqcount [-h] [-v] {count,analyze} ...
+
+    or
+
+    python -m barseqcount [-h] [-v] {count,analyze} ...
 
 The optional arguments ``-h/--help`` and ``-v/--version`` allow to show a help message and version information respectively.
 
