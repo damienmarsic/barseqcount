@@ -46,10 +46,12 @@ At the conda prompt, please type the following::
 Windows non-conda users: follow the instruction above except that you need to replace ``%CONDA_PREFIX%`` with the full path to a directory that is part of your PATH system variable.
 
 Linux and MacOSX non-conda users: create a file named ``barseqcount`` in a directory that is part of your PATH environment variable, with the following content::
+
     #!/bin/sh
     python -m barseqcount $@
 
 Then type the following to make the file executable::
+
     chmod +x barseqcount
 
 
