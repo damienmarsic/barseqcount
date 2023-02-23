@@ -27,7 +27,7 @@ Installation
 ============
 
 It is recommended to install ``barseqcount`` as a bioconda package under a Python 3 conda environment.
-If you don't have such environment, first `install Miniconda3 from here<https://docs.conda.io/en/latest/miniconda.html>`_ (exists for Linux, MacOSX and Windows).
+If you don't have such environment, first `install Miniconda3 from here <https://docs.conda.io/en/latest/miniconda.html>`_ (exists for Linux, MacOSX and Windows).
 
 To install the ``barseqcount`` bioconda package, at the conda prompt type::
 
