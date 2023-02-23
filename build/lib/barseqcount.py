@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__version__='0.1.3'
-last_update='2023-01-31'
+__version__='0.1.4'
+last_update='2023-02-23'
 author='Damien Marsic, damien.marsic@aliyun.com'
 license='GNU General Public v3 (GPLv3)'
 
@@ -119,7 +119,12 @@ def count(args):
             if x[1:] in defn.values():
                 fail+='\n  Duplicate definition: '+ln
                 continue
-            defn[x[0]]=x[1:]
+            if all([k in bc for k in x[1:]]):
+                defn[x[0]]=x[1:]
+            else:
+                for n in x[1:]:
+                    if n not in bc:
+                        fail+='\n  Unknown barcode: '+n
         if read=='probe':
             if not ln.isdigit() or int(ln)<1 or int(ln)>50:
                 fail+='\n  Probe length must be an integer between 1 and 50'
@@ -150,9 +155,6 @@ def count(args):
         for n in sorted(bc):
             if n not in x:
                 del bc[n]
-        for n in x:
-            if n not in bc:
-                fail+='\n  Unknown barcode: '+n
     for n in bc:
         if len(bc[n][0])<10:
             continue
