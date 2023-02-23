@@ -11,15 +11,23 @@ Source code:
 Python package:
  https://pypi.org/project/barseqcount/
 
+Bioconda package:
+ https://bioconda.github.io/recipes/barseqcount/README.html#package-barseqcount
+ 
 Bug report / feature requests:
  https://github.com/damienmarsic/barseqcount/issues/new/choose
+
+
+Latest news
+===========
+2023-02-23: update to 0.1.4. Improved detection of errors in the count configuration file.
 
 
 Installation
 ============
 
 It is recommended to install ``barseqcount`` as a bioconda package under a Python 3 conda environment.
-If you don't have such environment, first `install Miniconda3<https://docs.conda.io/en/latest/miniconda.html>`_ from here (exists for Linux, MacOSX and Windows).
+If you don't have such environment, first `install Miniconda3 from here<https://docs.conda.io/en/latest/miniconda.html>`_ (exists for Linux, MacOSX and Windows).
 
 To install the ``barseqcount`` bioconda package, at the conda prompt type::
 
@@ -30,6 +38,19 @@ To install the ``barseqcount`` bioconda package, at the conda prompt type::
     pip install barseqcount
 
 If using pip intall, note that dependencies (numpy, matplotlib and regex) might need to be installed individually if not already present.
+
+Windows conda users: note that Bioconda does not support Windows and does not allow the automatic creation of a bat file.
+At the conda prompt, please type the following::
+    (echo @echo off & echo python -m barseqcount %%*) > %CONDA_PREFIX%\Scripts\barseqcount.bat
+
+Windows non-conda users: follow the instruction above except that you need to replace ``%CONDA_PREFIX%`` with the full path to a directory that is part of your PATH system variable.
+
+Linux and MacOSX non-conda users: create a file named ``barseqcount`` in a directory that is part of your PATH environment variable, with the following content::
+    #!/bin/sh
+    python -m barseqcount $@
+
+Then type the following to make the file executable::
+    chmod +x barseqcount
 
 
 Update
@@ -90,7 +111,11 @@ Any common read file format (fasta or fastq, either uncompressed or gzipped) can
 
 Example of merging read files Reads_1.fq.gz and Reads_2.fq.gz into Merged_reads.fq.gz::
 
-    NGmerge -1 Reads_1.fq.gz -2 Reads_2.fq.gz -o Merged_reads
+    NGmerge -1 Reads_1.fq.gz -2 Reads_2.fq.gz -o Merged_reads.fq.gz
+
+If you get the error message ``Error! Quality scores outside of set range``, then add the ``-u 41`` and ``-g`` arguments (see NGmerge documentation for more information)::
+
+    NGmerge -1 Reads_1.fq.gz -2 Reads_2.fq.gz -o Merged_reads.fq.gz -u 41 -g
 
 Configuration file
 ------------------
@@ -247,8 +272,8 @@ Displays version and other information::
 
     python -m barseqcount -v
       Project: barseqcount
-      Version: 0.1.2
-      Latest update: 2023-01-20
+      Version: 0.1.4
+      Latest update: 2023-02-23
       Author: Damien Marsic, damien.marsic@aliyun.com
       License: GNU General Public v3 (GPLv3)
 
