@@ -2,6 +2,8 @@
 
 Analysis of DNA barcode sequencing experiments
 
+It is recommended to use barseqcount in a [conda](https://docs.conda.io/en/latest/miniconda.html) environment (can be Linux, Mac or Windows).
+
 Install from Bioconda:
 ````
 conda install -c bioconda barseqcount
