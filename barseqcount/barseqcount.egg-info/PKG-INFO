@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: barseqcount
-Version: 0.1.4
+Version: 0.1.5
 Summary: Analysis of DNA barcode sequencing experiments
 Home-page: https://github.com/damienmarsic/barseqcount
 Author: Damien Marsic

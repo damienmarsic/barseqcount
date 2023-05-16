@@ -12,7 +12,7 @@ Python package:
  https://pypi.org/project/barseqcount/
 
 Bioconda package:
- https://bioconda.github.io/recipes/barseqcount/README.html#package-barseqcount
+ https://bioconda.github.io/recipes/barseqcount/README.html
  
 Bug report / feature requests:
  https://github.com/damienmarsic/barseqcount/issues/new/choose
@@ -21,6 +21,7 @@ Bug report / feature requests:
 Latest news
 ===========
 2023-02-23: update to 0.1.4. Improved detection of errors in the count configuration file.
+2023-05-16: update to 0.1.5. Updated some function calls in order to be compatible with latest version of dmbiolib.
 
 
 Installation

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-__version__='0.1.4'
-last_update='2023-02-23'
+__version__='0.1.5'
+last_update='2023-05-16'
 author='Damien Marsic, damien.marsic@aliyun.com'
 license='GNU General Public v3 (GPLv3)'
 
 import dmbiolib as dbl
-import argparse,sys,os,itertools,regex
+import argparse,sys,os,itertools,regex#### update!
 from glob import glob
 import numpy as np
 from collections import defaultdict
@@ -78,7 +78,7 @@ def count(args):
                 fail+='\n  Too many items per line under READ FILES! Each line must contain a prefix followed by a single file name (merged reads if paired-end sequencing), separated by space or tab!'
             if len(x)==1:
                 z=dbl.prefix([x[0]])[0]
-                x.insert(0,x[0][:z])
+                x.insert(0,z)
             if x[0] in [k[0] for k in rfiles]:
                 fail+='\n  Duplicate prefix '+x[0]+' found under READ FILES! Each line must contain a different prefix!'
             else:
@@ -283,7 +283,7 @@ def count(args):
     fail=''
     print('OK\n\n  Checking read files...    ',end='')
     for j in range(len(rfiles)):
-        nr,fail=dbl.readcount(rfiles[j][1],fail)
+        nr=dbl.readcount(rfiles[j][1])
         rfiles[j].append(nr)
         if nr<100:
             fail+='\n  Number of reads in '+rfiles[j][0]+' is too low!'
@@ -543,6 +543,8 @@ def analyze(args):
                 S[ln]=set(ln.split(','))
         if read in ('gtit','etit'):
             x=ln.split()
+            if x[0].lower()=='none':
+                continue
             if len(x)==1 or not x[1].replace('.','').isdigit():
                 fail+='\n  Titer value missing: '+ln
             elif x[0] not in S:
@@ -907,8 +909,8 @@ def anaconf(fname,args):
             a=q.replace('_','-').replace(',','-').split('-')
             b=[k.replace('_','-').replace(',','-').split('-') for k in s if k!=q]
             for k in b:
-                for m in a:
-                    if m in k:
+                for n in a:
+                    if n in k:
                         break
                 else:
                     continue
@@ -928,18 +930,18 @@ def anaconf(fname,args):
     dna=[k for k in s if any([n in [m.lower() for m in k.replace('_','-').replace(',','-').split('-')] for n in ('dna','gdna','genome')])]
     rna=[k for k in s if any([n in [m.lower() for m in k.replace('_','-').replace(',','-').split('-')] for n in ('rna','cdna','expression')])]
     other=[k for k in s if (k not in dna and k not in rna)]
-    f.write('# GLOBAL GENOME TITERS:\nInstructions: Enter the names of all samples for which you have a global variant genome relative to host genome titer, one per line, with the name followed by the titer value and the unit, separated by tabs or blank spaces. The unit must be the same for all samples, and can be entered once (will be applied to all other samples) or more.\n\n'+'\t\tvg/cell\n'.join(dna)+'\t\tvg/cell\n\n')
-    f.write('# GLOBAL EXPRESSION TITERS:\nInstructions: Enter the names of all samples for which you have a global variant expression relative to host housekeeping gene expression level titer, one per line, with the name followed by the titer value and the unit, separated by tabs or blank spaces. The unit must be the same for all samples, and can be entered once (will be applied to all other samples) or more.\n\n'+'\t\t% control\n'.join(rna)+'\t\t% control\n\n')
+    f.write('# GLOBAL GENOME TITERS:\nInstructions: Enter the names of all samples for which you have a global variant genome relative to host genome titer, one per line, with the name followed by the titer value and the unit, separated by tabs or blank spaces. The unit must be the same for all samples, and can be entered once (will be applied to all other samples) or more. If no genome titers are available, enter "None" or delete the section from the configuration file.\n\n'+'\t\tvg/cell\n'.join(dna)+'\t\tvg/cell\n\n')
+    f.write('# GLOBAL EXPRESSION TITERS:\nInstructions: Enter the names of all samples for which you have a global variant expression relative to host housekeeping gene expression level titer, one per line, with the name followed by the titer value and the unit, separated by tabs or blank spaces. The unit must be the same for all samples, and can be entered once (will be applied to all other samples) or more. If no expression titers are available, enter "None" or delete the section from the configuration file.\n\n'+'\t\t% control\n'.join(rna)+'\t\t% control\n\n')
     f.write('# COMBINE BIOLOGICAL REPLICATES:\nInstructions: Each group of lines separated by empty lines will be a separate plot. Multiple samples within lines will be averaged. First line in each group is the figure title followed by sample identifiers (separated by space or tab). Each subsequent line: label followed by sample name(s) separated by tabs or spaces.\n\n')
     for n in (dna,rna,other):
         if not n:
             continue
         p=[k.replace('_','-').replace(',','-').split('-') for k in n]
-        x=[[k[i] for i in range(len(k)) if len(set([m[i] for m in p]))>1] for k in p]
-        w=[[k[i] for i in range(len(k)) if all([m[i].isdigit() for m in p])] for k in p]
+        x=[[k[-i] for i in range(len(k)) if len(set([m[max(-i,-len(m))] for m in p]))>1] for k in p]
+        w=[[k[-i] for i in range(len(k)) if all([m[max(-i,-len(m))].isdigit() for m in p])] for k in p]
         q=min([len(k) for k in w])
         if not q:
-            w=[[k[i] for i in range(len(k)) if all([m[i][-1].isdigit() for m in x])] for k in x]
+            w=[[k[-i] for i in range(len(k)) if all([m[max(-i,-len(m))][-1].isdigit() for m in x])] for k in x]
             q=min([len(k) for k in w])
         if q:
             w=[k[-1] for k in w]
@@ -956,6 +958,8 @@ def anaconf(fname,args):
             w=[]
         if len(w)==x.count(z[0].split('-')):
             y+='\t'+'\t'.join(w)
+        if not y:
+            continue
         f.write(y+'\n')
         for m in z:
             f.write(m+'\t'+'\t'.join(sorted([n[i] for i in range(len(n)) if all([q in p[i] for q in m.split('-')])]))+'\n')
@@ -971,26 +975,26 @@ def anaconf(fname,args):
 
 def countconf(fname,args):
     z=script+' '+args.command
-    f,dirname,rfiles=dbl.conf_start(fname,z)
-    f.write('# PROJECT NAME\nInstructions: Project name to be used as prefix in output file name.\n\n')
-    f.write(dirname+'\n\n')
-    f.write('# READ FILE(S)\nInstructions: List prefix (to be used as sample name in output files if multiple read files are present, will be created automatically if missing) and read file names, one file (single-end or merged paired-end data) per line, separated by space or tab.\n\n')
+    content,dirname,rfiles=dbl.conf_start(z)
+    content+='# PROJECT NAME\nInstructions: Project name to be used as prefix in output file name.\n\n'
+    content+=dirname+'\n\n'
+    content+='# READ FILE(S)\nInstructions: List prefix (to be used as sample name in output files if multiple read files are present, will be created automatically if missing) and read file names, one file (single-end or merged paired-end data) per line, separated by space or tab.\n\n'
     y=[k for k in rfiles if k.count(' ')==2]
     x=[k for k in rfiles if k not in y]
     if not x and y:
         print('\n  Only unmerged paired-end read files found in the current directory! Please merge before using '+script+'!\n')
         sys.exit()
-    f.write('\n'.join(x)+'\n\n')
-    f.write('# TEMPLATE SEQUENCE\nInstructions: Name of the file, in FASTA format, containing the PCR template sequence, with the barcode shown as a stretch of N. Alternatively, paste the sequence itself. Primer binding regions must be included.\n\n')
+    content+='\n'.join(x)+'\n\n'
+    content+='# TEMPLATE SEQUENCE\nInstructions: Name of the file, in FASTA format, containing the PCR template sequence, with the barcode shown as a stretch of N. Alternatively, paste the sequence itself. Primer binding regions must be included.\n\n'
     x=glob('*.f*a')
     y='\n'
     if len(x)==1:
         y=x[0]+2*y
-    f.write(y)
-    f.write("# PRIMERS/BARCODES\nInstructions: List all primers (name followed by sequence), whether barcoded or not, one per line (forward and reverse PCR primers used to amplify the template, as well as primers used to generate the template). Barcodes only (without primer sequence) can be entered instead, if no ambiguity. If no primer information is entered, the exact consensus read sequence must be entered in the template sequence section above, with all barcodes indicated by stretches of N, and barcodes should be grouped (each grpup surrounded by empty lines) by their corresponding region in the order the barcoded regions appear in the read sequence. Barcodes from the reverse strand need to be followed by a - sign (their reverse-complement will then be used).\n\n\n")
-    f.write("# DEFINITIONS\nInstructions: Each line contains a sample/variant name followed by one or more barcode name(s), separated by a space or tab. Barcodes from different regions indicate that the sample is defined by a combination of barcodes from those regions. Multiple barcodes from the same region are allowed and indicate that a sample/variant is represented by more than one barcoode. All primers/barcodes must have a different name. In case of more than one sample/conditions is defined by a barcode or barcode combination, use a separator (- or _ or ,) between them.\n\n\n")
-    f.write('# PROBE LENGTH\nInstructions: Minimum length in nt of sequences used as probes to locate barcodes (integer between 1 and 50.\n\n5\n\n')
-    dbl.conf_end(f,fname,z)
+    content+=y
+    content+="# PRIMERS/BARCODES\nInstructions: List all primers (name followed by sequence), whether barcoded or not, one per line (forward and reverse PCR primers used to amplify the template, as well as primers used to generate the template). Barcodes only (without primer sequence) can be entered instead, if no ambiguity. If no primer information is entered, the exact consensus read sequence must be entered in the template sequence section above, with all barcodes indicated by stretches of N, and barcodes should be grouped (each grpup surrounded by empty lines) by their corresponding region in the order the barcoded regions appear in the read sequence. Barcodes from the reverse strand need to be followed by a - sign (their reverse-complement will then be used).\n\n\n"
+    content+="# DEFINITIONS\nInstructions: Each line contains a sample/variant name followed by one or more barcode name(s), separated by a space or tab. Barcodes from different regions indicate that the sample is defined by a combination of barcodes from those regions. Multiple barcodes from the same region are allowed and indicate that a sample/variant is represented by more than one barcoode. All primers/barcodes must have a different name. In case of more than one sample/conditions is defined by a barcode or barcode combination, use a separator (- or _ or ,) between them.\n\n\n"
+    content+='# PROBE LENGTH\nInstructions: Minimum length in nt of sequences used as probes to locate barcodes (integer between 1 and 50.\n\n5\n\n'
+    dbl.conf_end(fname,content,z)
 
 def find_bc(l,templ,bcr,cl,ctempl,cbcr):
     X={}
@@ -1031,9 +1035,9 @@ def find_bc(l,templ,bcr,cl,ctempl,cbcr):
 
 def fb(l,templ,i,bcr):
     r=''
-    x=[k.start()+i-bcr[i][-3] for k in regex.finditer(templ[bcr[i][-3]:i],l,overlapped=True)]
+    x=[k.start()+i-bcr[i][-3] for k in regex.finditer(templ[bcr[i][-3]:i],l,overlapped=True)]### update !!!
     if x:
-        y=[k.start() for k in regex.finditer(templ[bcr[i][-2]:bcr[i][-1]],l,overlapped=True)]
+        y=[k.start() for k in regex.finditer(templ[bcr[i][-2]:bcr[i][-1]],l,overlapped=True)]### update !!!
         z=[(n,m) for n in x for m in y if m>n and m-n==bcr[i][0]]
         if z:
             if len(z)==1:
